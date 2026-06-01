@@ -1,10 +1,10 @@
 // Member 2 – User Booking Page
 import { useEffect, useState } from "react";
-import Navbar from "../components/Navbar";
-import Footer from "../components/Footer";
-import BookingForm from "../components/booking/BookingForm";
-import BookingList from "../components/booking/BookingList";
-import "../styles/booking/bookingPage.css";
+import Navbar from "../../components/Navbar";
+import Footer from "../../components/Footer";
+import BookingForm from "../../components/booking/BookingForm";
+import BookingList from "../../components/booking/BookingList";
+import "../../styles/booking/bookingPage.css";
 
 const AUTH_KEY = "sch.currentUser";
 

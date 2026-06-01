@@ -9,6 +9,7 @@ import ManageFacilities from "./pages/Admin/ManageFacilities";
 import AdminBookings from "./pages/Admin/AdminBookings";
 import AdminTickets from "./pages/Admin/AdminTickets";
 import AdminNotifications from "./pages/Admin/AdminNotifications";
+import ManageUsers from "./pages/Admin/ManageUsers";
 import FacilityDetails from "./pages/FacilityDetails";
 import BookingPage from "./pages/BookingPage";
 import TicketsPage from "./pages/TicketsPage";
@@ -16,7 +17,7 @@ import "./styles/home.css";
 
 function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/facilities" element={<FacilitiesPage />} />
@@ -30,6 +31,7 @@ function App() {
           <Route path="bookings" element={<AdminBookings />} />
           <Route path="tickets" element={<AdminTickets />} />
           <Route path="notifications" element={<AdminNotifications />} />
+          <Route path="users" element={<ManageUsers />} />
         </Route>
 
         <Route path="/facilities/view" element={<Navigate to="/view-facilities" replace />} />

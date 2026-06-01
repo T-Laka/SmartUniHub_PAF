@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Calendar from "react-calendar";
 import {
   Bar,
@@ -43,6 +44,7 @@ function formatDate(date) {
 }
 
 export default function AdminDashboard() {
+  const navigate = useNavigate();
   const [facilities, setFacilities] = useState([]);
   const [summary, setSummary] = useState({
     totalFacilities: 0,
@@ -53,6 +55,57 @@ export default function AdminDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
   const [selectedDate, setSelectedDate] = useState(new Date());
+  
+  // Mock user data
+  const [users] = useState([
+    {
+      id: 1,
+      fullName: "My Account",
+      email: "admin@paf.com",
+      role: "ADMIN",
+      status: "active",
+      lastLogin: new Date("2024-04-25"),
+    },
+    {
+      id: 2,
+      fullName: "John Doe",
+      email: "john.doe@student.paf.com",
+      role: "USER",
+      status: "active",
+      lastLogin: new Date("2024-04-24"),
+    },
+    {
+      id: 3,
+      fullName: "Jane Smith",
+      email: "jane.smith@student.paf.com",
+      role: "USER",
+      status: "active",
+      lastLogin: new Date("2024-04-23"),
+    },
+    {
+      id: 4,
+      fullName: "Bob Wilson",
+      email: "bob.wilson@staff.paf.com",
+      role: "STAFF",
+      status: "active",
+      lastLogin: new Date("2024-04-22"),
+    },
+    {
+      id: 5,
+      fullName: "Alice Brown",
+      email: "alice.brown@student.paf.com",
+      role: "USER",
+      status: "suspended",
+      lastLogin: new Date("2024-04-10"),
+    },
+  ]);
+
+  const userStats = useMemo(() => ({
+    total: users.length,
+    active: users.filter((u) => u.status === "active").length,
+    suspended: users.filter((u) => u.status === "suspended").length,
+    admins: users.filter((u) => u.role === "ADMIN").length,
+  }), [users]);
 
   useEffect(() => {
     let isMounted = true;
@@ -232,6 +285,107 @@ export default function AdminDashboard() {
             <p>Out of Service</p>
             <strong>{isLoading ? "..." : outOfServiceFacilities}</strong>
           </article>
+        </section>
+
+        {/* User Management Section */}
+        <section className="admin-card admin-users-section" aria-label="User management">
+          <div className="users-section-header">
+            <div>
+              <h3>User Management</h3>
+              <p>Quick overview of system users</p>
+            </div>
+            <button 
+              className="btn-manage-users"
+              onClick={() => navigate('/admin/users')}
+            >
+              Manage All Users →
+            </button>
+          </div>
+
+          <div className="users-quick-stats">
+            <div className="user-stat-card">
+              <div className="user-stat-icon" style={{ background: '#dbeafe' }}>
+                <span style={{ color: '#1e40af' }}>👥</span>
+              </div>
+              <div>
+                <p>Total Users</p>
+                <strong>{userStats.total}</strong>
+              </div>
+            </div>
+            <div className="user-stat-card">
+              <div className="user-stat-icon" style={{ background: '#d1fae5' }}>
+                <span style={{ color: '#065f46' }}>✓</span>
+              </div>
+              <div>
+                <p>Active</p>
+                <strong>{userStats.active}</strong>
+              </div>
+            </div>
+            <div className="user-stat-card">
+              <div className="user-stat-icon" style={{ background: '#fee2e2' }}>
+                <span style={{ color: '#991b1b' }}>⊘</span>
+              </div>
+              <div>
+                <p>Suspended</p>
+                <strong>{userStats.suspended}</strong>
+              </div>
+            </div>
+            <div className="user-stat-card">
+              <div className="user-stat-icon" style={{ background: '#fef3c7' }}>
+                <span style={{ color: '#92400e' }}>⚡</span>
+              </div>
+              <div>
+                <p>Admins</p>
+                <strong>{userStats.admins}</strong>
+              </div>
+            </div>
+          </div>
+
+          <div className="recent-users-table">
+            <h4>Recent Users</h4>
+            <table>
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Status</th>
+                  <th>Last Login</th>
+                </tr>
+              </thead>
+              <tbody>
+                {users.slice(0, 5).map((user) => (
+                  <tr key={user.id}>
+                    <td>
+                      <div className="user-cell-compact">
+                        <div className="user-avatar-small">
+                          {user.fullName
+                            .split(" ")
+                            .map((n) => n[0])
+                            .join("")
+                            .toUpperCase()
+                            .slice(0, 2)}
+                        </div>
+                        <span>{user.fullName}</span>
+                      </div>
+                    </td>
+                    <td>{user.email}</td>
+                    <td>
+                      <span className={`role-badge-small role-${user.role.toLowerCase()}`}>
+                        {user.role}
+                      </span>
+                    </td>
+                    <td>
+                      <span className={`status-badge-small status-${user.status}`}>
+                        {user.status}
+                      </span>
+                    </td>
+                    <td>{user.lastLogin.toLocaleDateString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </section>
 
         <section className="admin-analytics-grid" aria-label="Facilities analytics charts">

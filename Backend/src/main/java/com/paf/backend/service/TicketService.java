@@ -7,6 +7,8 @@ import com.paf.backend.dto.TicketRequest;
 import com.paf.backend.dto.TicketResponse;
 import com.paf.backend.repository.TicketRepository;
 import jakarta.annotation.PostConstruct;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -15,6 +17,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.regex.Pattern;
+import javax.imageio.ImageIO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Sort;
@@ -445,6 +448,10 @@ public class TicketService {
             throw new IllegalArgumentException("Attachment cannot be empty");
         }
 
+        if (!isImageAttachment(decoded)) {
+            throw new IllegalArgumentException("Only image attachments are allowed");
+        }
+
         if (decoded.length > MAX_ATTACHMENT_BYTES) {
             throw new IllegalArgumentException("Each attachment must be 5 MB or smaller");
         }
@@ -480,6 +487,14 @@ public class TicketService {
         }
 
         return normalized;
+    }
+
+    private boolean isImageAttachment(byte[] data) {
+        try {
+            return ImageIO.read(new ByteArrayInputStream(data)) != null;
+        } catch (IOException ex) {
+            return false;
+        }
     }
 
     private String normalizeRequiredText(String value, String message) {

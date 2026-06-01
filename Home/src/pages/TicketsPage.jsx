@@ -43,6 +43,14 @@ const STATUS_FILTER_OPTIONS = [
 
 const MAX_ATTACHMENT_FILES = 5;
 const MAX_ATTACHMENT_BYTES = 5 * 1024 * 1024;
+const ALLOWED_IMAGE_MIME_TYPES = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/gif",
+  "image/webp",
+  "image/bmp",
+]);
+const ALLOWED_IMAGE_FILE_PATTERN = /\.(jpe?g|png|gif|webp|bmp)$/i;
 const REGISTER_NUMBER_REGEX = /^IT\d{8}$/;
 const CONTACT_NUMBER_REGEX = /^\d{10}$/;
 const COURSE_CODE_REGEX = /^IT\d{4}$/;
@@ -110,6 +118,15 @@ function formatBytes(bytes) {
   }
 
   return `${value.toFixed(unitIndex === 0 ? 0 : 1)} ${units[unitIndex]}`;
+}
+
+function isAllowedImageFile(file) {
+  if (!file) {
+    return false;
+  }
+
+  const normalizedType = String(file.type || "").toLowerCase();
+  return ALLOWED_IMAGE_MIME_TYPES.has(normalizedType) || ALLOWED_IMAGE_FILE_PATTERN.test(file.name || "");
 }
 
 function readFileAsBase64(file) {
@@ -315,6 +332,16 @@ export default function TicketsPage({ view = "create" }) {
       return;
     }
 
+    const invalidImageFile = files.find((file) => !isAllowedImageFile(file));
+    if (invalidImageFile) {
+      setSelectedFiles([]);
+      setErrorMessage(`Only image files are allowed. Invalid file: ${invalidImageFile.name}`);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+      return;
+    }
+
     setSelectedFiles(files);
   }
 
@@ -335,6 +362,16 @@ export default function TicketsPage({ view = "create" }) {
     if (invalidFile) {
       setEditSelectedFiles([]);
       setErrorMessage(`Each file must be 5 MB or smaller. Invalid file: ${invalidFile.name}`);
+      if (editFileInputRef.current) {
+        editFileInputRef.current.value = "";
+      }
+      return;
+    }
+
+    const invalidImageFile = files.find((file) => !isAllowedImageFile(file));
+    if (invalidImageFile) {
+      setEditSelectedFiles([]);
+      setErrorMessage(`Only image files are allowed. Invalid file: ${invalidImageFile.name}`);
       if (editFileInputRef.current) {
         editFileInputRef.current.value = "";
       }
@@ -784,9 +821,9 @@ export default function TicketsPage({ view = "create" }) {
                 type="file"
                 multiple
                 onChange={handleAttachmentsChange}
-                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.txt"
+                accept=".jpg,.jpeg,.png,.gif,.webp,.bmp,image/jpeg,image/png,image/gif,image/webp,image/bmp"
               />
-              <p className="ticket-helper-text">Up to 5 files, max 5 MB each.</p>
+              <p className="ticket-helper-text">Up to 5 image files, max 5 MB each.</p>
 
               {selectedFiles.length > 0 && (
                 <div className="ticket-selected-files">
@@ -1027,10 +1064,10 @@ export default function TicketsPage({ view = "create" }) {
                                 type="file"
                                 multiple
                                 onChange={(event) => handleEditAttachmentsChange(event, studentAttachments.length)}
-                                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.txt"
+                                accept=".jpg,.jpeg,.png,.gif,.webp,.bmp,image/jpeg,image/png,image/gif,image/webp,image/bmp"
                               />
                               <p className="ticket-helper-text">
-                                You can keep current files and add new ones. Total limit: {MAX_ATTACHMENT_FILES} files, max 5 MB each.
+                                You can keep current files and add new ones. Total limit: {MAX_ATTACHMENT_FILES} image files, max 5 MB each.
                               </p>
                             </div>
                           ) : (

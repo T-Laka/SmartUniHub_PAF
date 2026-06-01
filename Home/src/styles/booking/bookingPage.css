@@ -1,0 +1,102 @@
+/* Member 2 – Booking Page styles */
+.booking-page { display: flex; flex-direction: column; min-height: 100vh; background: #f8fafc; }
+
+.booking-page__main {
+  flex: 1;
+  padding: 2rem 1rem;
+}
+
+.booking-page__container {
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+.booking-page__heading {
+  font-size: clamp(1.6rem, 3vw, 2rem);
+  color: #0f172a;
+  margin-bottom: 1.2rem;
+}
+
+.booking-page__tabs {
+  display: flex;
+  gap: .5rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: .5rem;
+}
+
+.booking-tab {
+  padding: .5rem 1.2rem;
+  border: none;
+  background: transparent;
+  font-size: .95rem;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  border-radius: 6px 6px 0 0;
+  transition: color .2s, background .2s;
+}
+
+.booking-tab:hover { color: #2563eb; background: #eff6ff; }
+.booking-tab--active { color: #2563eb; border-bottom: 2px solid #2563eb; margin-bottom: -2px; }
+
+.booking-page__my { margin-top: .5rem; }
+
+.booking-page__email-form {
+  display: flex;
+  flex-direction: column;
+  gap: .6rem;
+  max-width: 420px;
+  margin-bottom: 1.5rem;
+}
+
+.booking-page__email-form label { font-weight: 600; color: #374151; font-size: .9rem; }
+
+.booking-page__email-row {
+  display: flex;
+  gap: .5rem;
+}
+
+.booking-page__email-row input {
+  flex: 1;
+  padding: .55rem .75rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: .95rem;
+}
+
+.booking-page__email-row button {
+  padding: .55rem 1.1rem;
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.booking-page__viewing {
+  font-size: .9rem;
+  color: #374151;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+}
+
+.booking-page__change {
+  background: none;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: .2rem .6rem;
+  font-size: .8rem;
+  cursor: pointer;
+  color: #64748b;
+}
+
+.booking-page__no-user {
+  color: #64748b;
+  text-align: center;
+  padding: 2.5rem 0;
+  font-size: .95rem;
+}

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 
 const AUTH_STORAGE_KEY = "sch.currentUser";
 
@@ -8,13 +8,14 @@ const menuItems = [
   { label: "Resources" }, // remove "to"
   { label: "Bookings", to: "/booking" },
   { label: "Tickets", to: "/tickets" },
-  { label: "Notifications", href: "#" },
 ];
 
 export default function Navbar({ userName = "Alex Silva", role = "USER" }) {
+  const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
@@ -26,6 +27,8 @@ export default function Navbar({ userName = "Alex Silva", role = "USER" }) {
   const [successMessage, setSuccessMessage] = useState("");
   const [fieldErrors, setFieldErrors] = useState({});
   const [currentUser, setCurrentUser] = useState(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const displayName = currentUser?.fullName || userName;
   const displayRole = currentUser?.role || role;
@@ -74,6 +77,9 @@ export default function Navbar({ userName = "Alex Silva", role = "USER" }) {
       } else {
         localStorage.removeItem(AUTH_STORAGE_KEY);
       }
+      
+      // Dispatch custom event for other components to react to auth change
+      window.dispatchEvent(new Event("sch:authchange"));
     } catch (error) {
       // Ignore storage errors and keep in-memory auth state.
     }
@@ -214,6 +220,17 @@ export default function Navbar({ userName = "Alex Silva", role = "USER" }) {
   function handleSignOut() {
     persistCurrentUser(null);
     setIsProfileOpen(false);
+    
+    // Dispatch custom event for other components to react to auth change
+    window.dispatchEvent(new Event("sch:authchange"));
+    
+    // Navigate to home page and reload to clear all state
+    navigate("/");
+    
+    // Small delay to ensure navigation completes before reload
+    setTimeout(() => {
+      window.location.reload();
+    }, 100);
   }
 
   function goToCustomerDashboard() {
@@ -271,7 +288,23 @@ export default function Navbar({ userName = "Alex Silva", role = "USER" }) {
     }, 0);
   }, []);
 
+  // Close notifications dropdown when clicking outside
+  useEffect(() => {
+    if (!isNotificationsOpen) return;
+
+    function handleClickOutside(event) {
+      const notificationsWrapper = event.target.closest('.notifications-wrapper');
+      if (!notificationsWrapper) {
+        setIsNotificationsOpen(false);
+      }
+    }
+
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [isNotificationsOpen]);
+
   return (
+    <>
     <header className="top-nav">
       <div className="brand-wrap">
         <div className="brand-logo">SC</div>
@@ -292,6 +325,17 @@ export default function Navbar({ userName = "Alex Silva", role = "USER" }) {
       </button>
 
       <nav className={`nav-links ${isMenuOpen ? "open" : ""}`}>
+        {currentUser?.role === "ADMIN" && (
+          <NavLink
+            to="/admin/dashboard"
+            className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}
+            onClick={() => setIsMenuOpen(false)}
+            style={{ fontWeight: "600", color: "#2563eb" }}
+          >
+            🔧 Admin Panel
+          </NavLink>
+        )}
+        
         {menuItems.map((item) => {
           if (item.label === "Resources" && !currentUser) {
             return (
@@ -302,15 +346,17 @@ export default function Navbar({ userName = "Alex Silva", role = "USER" }) {
                 onClick={() => {
                   setIsMenuOpen(false);
                   openAuthModal("login");
-                  setErrorMessage("Please login to access Facilities.");
                 }}
               >
-                {item.label}
+                <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                  {item.label}
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" style={{ opacity: 0.6 }}>
+                    <path d="M10 5V3.5C10 1.57 8.43 0 6.5 0S3 1.57 3 3.5V5c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h7c.55 0 1-.45 1-1V6c0-.55-.45-1-1-1zM6.5 8c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zM8 5H5V3.5C5 2.67 5.67 2 6.5 2S8 2.67 8 3.5V5z"/>
+                  </svg>
+                </span>
               </button>
             );
           }
-
-
 
           if (item.label === "Resources") {
             const targetPath =
@@ -328,9 +374,27 @@ export default function Navbar({ userName = "Alex Silva", role = "USER" }) {
             );
           }
 
-
-
-
+          // Protect Bookings and Tickets - require login
+          if ((item.label === "Bookings" || item.label === "Tickets") && !currentUser) {
+            return (
+              <button
+                key={item.label}
+                type="button"
+                className="nav-link nav-link-lock"
+                onClick={() => {
+                  setIsMenuOpen(false);
+                  openAuthModal("login");
+                }}
+              >
+                <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                  {item.label}
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" style={{ opacity: 0.6 }}>
+                    <path d="M10 5V3.5C10 1.57 8.43 0 6.5 0S3 1.57 3 3.5V5c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h7c.55 0 1-.45 1-1V6c0-.55-.45-1-1-1zM6.5 8c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zM8 5H5V3.5C5 2.67 5.67 2 6.5 2S8 2.67 8 3.5V5z"/>
+                  </svg>
+                </span>
+              </button>
+            );
+          }
 
           if (item.to) {
             return (
@@ -353,65 +417,163 @@ export default function Navbar({ userName = "Alex Silva", role = "USER" }) {
         })}
       </nav>
 
-      <div className="profile-wrap">
-        {currentUser ? (
-          <>
+      <div className="navbar-actions">
+        {/* Notifications Button */}
+        {currentUser && (
+          <div className="notifications-wrapper">
             <button
-              className="profile-btn"
-              onClick={() => setIsProfileOpen((prev) => !prev)}
-              aria-label="User profile"
+              className="notifications-btn"
+              onClick={() => setIsNotificationsOpen((prev) => !prev)}
+              aria-label="Notifications"
             >
-              <span className="profile-avatar">{avatar}</span>
-              <span className="profile-meta">
-                <strong>{displayName}</strong>
-                <small>{displayRole}</small>
-              </span>
-              <span className="chevron">v</span>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+              </svg>
+              <span className="notification-badge">3</span>
             </button>
 
-            {isProfileOpen && (
-              <div className="profile-dropdown" role="menu">
-                <a
-                  href="#customer-dashboard"
-                  onClick={(event) => {
-                    event.preventDefault();
-                    goToCustomerDashboard();
-                  }}
-                >
-                  Customer Dashboard
-                </a>
-                <a href="#">Settings</a>
-                <button type="button" className="dropdown-action" onClick={handleSignOut}>
-                  Sign out
-                </button>
+            {isNotificationsOpen && (
+              <div className="notifications-dropdown">
+                <div className="notifications-header">
+                  <h3>Notifications</h3>
+                  <button className="mark-read-btn">Mark all as read</button>
+                </div>
+                <div className="notifications-list">
+                  <div className="notification-item unread">
+                    <div className="notification-icon success">
+                      <svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor">
+                        <path d="M9 0C4.03 0 0 4.03 0 9s4.03 9 9 9 9-4.03 9-9-4.03-9-9-9zm4.3 6.7l-5 5c-.2.2-.5.2-.7 0l-2-2c-.2-.2-.2-.5 0-.7s.5-.2.7 0l1.6 1.6 4.6-4.6c.2-.2.5-.2.7 0s.2.5.1.7z"/>
+                      </svg>
+                    </div>
+                    <div className="notification-content">
+                      <strong>Booking Confirmed</strong>
+                      <p>Your booking for Conference Room A has been approved</p>
+                      <span className="notification-time">2 hours ago</span>
+                    </div>
+                  </div>
+
+                  <div className="notification-item unread">
+                    <div className="notification-icon info">
+                      <svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor">
+                        <path d="M9 0C4.03 0 0 4.03 0 9s4.03 9 9 9 9-4.03 9-9-4.03-9-9-9zm1 13H8V8h2v5zm0-6H8V5h2v2z"/>
+                      </svg>
+                    </div>
+                    <div className="notification-content">
+                      <strong>System Maintenance</strong>
+                      <p>Scheduled maintenance on Sunday 2AM-4AM</p>
+                      <span className="notification-time">5 hours ago</span>
+                    </div>
+                  </div>
+
+                  <div className="notification-item">
+                    <div className="notification-icon warning">
+                      <svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor">
+                        <path d="M9 0C4.03 0 0 4.03 0 9s4.03 9 9 9 9-4.03 9-9-4.03-9-9-9zm1 13H8V8h2v5zm0-6H8V5h2v2z"/>
+                      </svg>
+                    </div>
+                    <div className="notification-content">
+                      <strong>Ticket Update</strong>
+                      <p>Your support ticket #1234 has been resolved</p>
+                      <span className="notification-time">1 day ago</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="notifications-footer">
+                  <button className="view-all-btn">View All Notifications</button>
+                </div>
               </div>
             )}
-          </>
-        ) : (
-          <button
-            className="auth-btn"
-            onClick={() => {
-              openAuthModal("login");
-            }}
-          >
-            My Account Login
-          </button>
+          </div>
         )}
-      </div>
 
-      {isLoginOpen && (
-        <div className="modal-overlay" role="dialog" aria-modal="true">
-          <div className="login-modal">
-            <div className="modal-head">
-              <h3>{authMode === "login" ? "Login to My Account" : "Create My Account"}</h3>
+        <div className="profile-wrap">
+          {currentUser ? (
+            <>
               <button
-                className="modal-close"
-                type="button"
-                onClick={() => setIsLoginOpen(false)}
-                aria-label="Close"
+                className="profile-btn"
+                onClick={() => setIsProfileOpen((prev) => !prev)}
+                aria-label="User profile"
               >
-                x
+                <span className="profile-avatar">{avatar}</span>
+                <span className="profile-meta">
+                  <strong>{displayName}</strong>
+                  <small>{displayRole}</small>
+                </span>
+                <span className="chevron">v</span>
               </button>
+
+              {isProfileOpen && (
+                <div className="profile-dropdown" role="menu">
+                  {displayRole === "ADMIN" && (
+                    <NavLink to="/admin/dashboard" onClick={() => setIsProfileOpen(false)}>
+                      🔧 Admin Dashboard
+                    </NavLink>
+                  )}
+                  <a
+                    href="#customer-dashboard"
+                    onClick={(event) => {
+                      event.preventDefault();
+                      goToCustomerDashboard();
+                    }}
+                  >
+                    Customer Dashboard
+                  </a>
+                  <a href="#">Settings</a>
+                  <button type="button" className="dropdown-action" onClick={handleSignOut}>
+                    Sign out
+                  </button>
+                </div>
+              )}
+            </>
+          ) : (
+            <button
+              className="auth-btn"
+              onClick={() => {
+                openAuthModal("login");
+              }}
+            >
+              My Account Login
+            </button>
+          )}
+        </div>
+      </div>
+    </header>
+
+      {/* Modal outside header for proper z-index stacking */}
+      {isLoginOpen && (
+        <div className="modal-overlay" role="dialog" aria-modal="true" onClick={() => setIsLoginOpen(false)}>
+          <div className="login-modal" onClick={(e) => e.stopPropagation()}>
+            <button
+              className="modal-close"
+              type="button"
+              onClick={() => setIsLoginOpen(false)}
+              aria-label="Close"
+            >
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+              </svg>
+            </button>
+
+            <div className="modal-header-section">
+              <div className="modal-icon">
+                <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                  <circle cx="16" cy="16" r="14" fill="url(#gradient1)" opacity="0.2"/>
+                  <path d="M16 8C13.24 8 11 10.24 11 13C11 15.76 13.24 18 16 18C18.76 18 21 15.76 21 13C21 10.24 18.76 8 16 8ZM16 16C14.34 16 13 14.66 13 13C13 11.34 14.34 10 16 10C17.66 10 19 11.34 19 13C19 14.66 17.66 16 16 16ZM16 19C12.67 19 6 20.67 6 24V26H26V24C26 20.67 19.33 19 16 19ZM8 24C8.22 23.28 12.31 21 16 21C19.7 21 23.77 23.29 24 24H8Z" fill="url(#gradient1)"/>
+                  <defs>
+                    <linearGradient id="gradient1" x1="6" y1="8" x2="26" y2="26" gradientUnits="userSpaceOnUse">
+                      <stop stopColor="#3359ff"/>
+                      <stop offset="1" stopColor="#7a54ff"/>
+                    </linearGradient>
+                  </defs>
+                </svg>
+              </div>
+              <h3 className="modal-title">{authMode === "login" ? "Welcome Back" : "Create Account"}</h3>
+              <p className="modal-subtitle">
+                {authMode === "login" 
+                  ? "Sign in to access your Smart Campus account" 
+                  : "Join Smart Campus Hub today"}
+              </p>
             </div>
 
             <div className="auth-tabs">
@@ -420,14 +582,14 @@ export default function Navbar({ userName = "Alex Silva", role = "USER" }) {
                 className={`auth-tab ${authMode === "login" ? "active" : ""}`}
                 onClick={() => openAuthModal("login")}
               >
-                Login
+                <span>Sign In</span>
               </button>
               <button
                 type="button"
                 className={`auth-tab ${authMode === "register" ? "active" : ""}`}
                 onClick={() => openAuthModal("register")}
               >
-                Register
+                <span>Sign Up</span>
               </button>
             </div>
 
@@ -436,8 +598,13 @@ export default function Navbar({ userName = "Alex Silva", role = "USER" }) {
               onSubmit={authMode === "login" ? handleLogin : handleRegister}
             >
               {authMode === "register" && (
-                <>
-                  <label htmlFor="fullName">Full Name</label>
+                <div className="form-group">
+                  <label htmlFor="fullName">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                      <path d="M8 8c1.66 0 3-1.34 3-3S9.66 2 8 2 5 3.34 5 5s1.34 3 3 3zm0 2c-2 0-6 1-6 3v1h12v-1c0-2-4-3-6-3z"/>
+                    </svg>
+                    Full Name
+                  </label>
                   <input
                     id="fullName"
                     type="text"
@@ -446,73 +613,179 @@ export default function Navbar({ userName = "Alex Silva", role = "USER" }) {
                       setFullName(event.target.value);
                       clearFieldError("fullName");
                     }}
-                    placeholder="Your full name"
+                    placeholder="Enter your full name"
                     required
+                    className={fieldErrors.fullName ? "error" : ""}
                   />
-                  {fieldErrors.fullName && <p className="field-error">{fieldErrors.fullName}</p>}
-                </>
+                  {fieldErrors.fullName && (
+                    <p className="field-error">
+                      <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
+                        <path d="M7 0C3.13 0 0 3.13 0 7s3.13 7 7 7 7-3.13 7-7-3.13-7-7-7zm1 10H6V6h2v4zm0-5H6V3h2v2z"/>
+                      </svg>
+                      {fieldErrors.fullName}
+                    </p>
+                  )}
+                </div>
               )}
 
-              <label htmlFor="email">Email</label>
-              <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(event) => {
-                  setEmail(event.target.value);
-                  clearFieldError("email");
-                }}
-                placeholder="you@example.com"
-                required
-              />
-              {fieldErrors.email && <p className="field-error">{fieldErrors.email}</p>}
+              <div className="form-group">
+                <label htmlFor="email">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                    <path d="M14 3H2c-.55 0-1 .45-1 1v8c0 .55.45 1 1 1h12c.55 0 1-.45 1-1V4c0-.55-.45-1-1-1zm0 2l-6 4-6-4V4l6 4 6-4v1z"/>
+                  </svg>
+                  Email Address
+                </label>
+                <input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(event) => {
+                    setEmail(event.target.value);
+                    clearFieldError("email");
+                  }}
+                  placeholder="you@example.com"
+                  required
+                  className={fieldErrors.email ? "error" : ""}
+                />
+                {fieldErrors.email && (
+                  <p className="field-error">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
+                      <path d="M7 0C3.13 0 0 3.13 0 7s3.13 7 7 7 7-3.13 7-7-3.13-7-7-7zm1 10H6V6h2v4zm0-5H6V3h2v2z"/>
+                    </svg>
+                    {fieldErrors.email}
+                  </p>
+                )}
+              </div>
 
-              <label htmlFor="password">Password</label>
-              <input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(event) => {
-                  setPassword(event.target.value);
-                  clearFieldError("password");
-                  clearFieldError("confirmPassword");
-                }}
-                placeholder="Enter your password"
-                required
-              />
+              <div className="form-group">
+                <label htmlFor="password">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                    <path d="M12 7V5c0-2.21-1.79-4-4-4S4 2.79 4 5v2c-.55 0-1 .45-1 1v5c0 .55.45 1 1 1h8c.55 0 1-.45 1-1V8c0-.55-.45-1-1-1zM8 11c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm2-4H6V5c0-1.1.9-2 2-2s2 .9 2 2v2z"/>
+                  </svg>
+                  Password
+                </label>
+                <div className="password-input-wrapper">
+                  <input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(event) => {
+                      setPassword(event.target.value);
+                      clearFieldError("password");
+                      clearFieldError("confirmPassword");
+                    }}
+                    placeholder="Enter your password"
+                    required
+                    className={fieldErrors.password ? "error" : ""}
+                  />
+                  <button
+                    type="button"
+                    className="password-toggle-btn"
+                    onClick={() => setShowPassword(!showPassword)}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPassword ? (
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                        <line x1="1" y1="1" x2="23" y2="23"/>
+                      </svg>
+                    ) : (
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                        <circle cx="12" cy="12" r="3"/>
+                      </svg>
+                    )}
+                  </button>
+                </div>
+                {fieldErrors.password && (
+                  <p className="field-error">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
+                      <path d="M7 0C3.13 0 0 3.13 0 7s3.13 7 7 7 7-3.13 7-7-3.13-7-7-7zm1 10H6V6h2v4zm0-5H6V3h2v2z"/>
+                    </svg>
+                    {fieldErrors.password}
+                  </p>
+                )}
+              </div>
 
               {authMode === "register" && (
                 <>
-                  <div className="password-strength-head">
-                    <span>Password strength</span>
-                    <strong>{passwordStrengthLabel}</strong>
+                  <div className="password-strength-section">
+                    <div className="password-strength-head">
+                      <span>Password strength</span>
+                      <strong className={`strength-${passwordStrengthLabel.toLowerCase()}`}>
+                        {passwordStrengthLabel}
+                      </strong>
+                    </div>
+                    <div className="password-meter" aria-hidden="true">
+                      <span 
+                        className={`strength-${passwordStrengthLabel.toLowerCase()}`}
+                        style={{ width: `${(passedPasswordChecks / passwordChecks.length) * 100}%` }} 
+                      />
+                    </div>
+                    <ul className="password-rules">
+                      {passwordChecks.map((rule) => (
+                        <li key={rule.id} className={rule.passed ? "passed" : ""}>
+                          <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+                            {rule.passed ? (
+                              <path d="M10.5 3L4.5 9L1.5 6" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+                            ) : (
+                              <circle cx="6" cy="6" r="2"/>
+                            )}
+                          </svg>
+                          {rule.label}
+                        </li>
+                      ))}
+                    </ul>
                   </div>
-                  <div className="password-meter" aria-hidden="true">
-                    <span style={{ width: `${(passedPasswordChecks / passwordChecks.length) * 100}%` }} />
-                  </div>
-                  <ul className="password-rules">
-                    {passwordChecks.map((rule) => (
-                      <li key={rule.id} className={rule.passed ? "passed" : ""}>
-                        {rule.label}
-                      </li>
-                    ))}
-                  </ul>
 
-                  <label htmlFor="confirmPassword">Confirm Password</label>
-                  <input
-                    id="confirmPassword"
-                    type="password"
-                    value={confirmPassword}
-                    onChange={(event) => {
-                      setConfirmPassword(event.target.value);
-                      clearFieldError("confirmPassword");
-                    }}
-                    placeholder="Re-enter your password"
-                    required
-                  />
-                  {fieldErrors.confirmPassword && (
-                    <p className="field-error">{fieldErrors.confirmPassword}</p>
-                  )}
+                  <div className="form-group">
+                    <label htmlFor="confirmPassword">
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                        <path d="M12 7V5c0-2.21-1.79-4-4-4S4 2.79 4 5v2c-.55 0-1 .45-1 1v5c0 .55.45 1 1 1h8c.55 0 1-.45 1-1V8c0-.55-.45-1-1-1zM8 11c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm2-4H6V5c0-1.1.9-2 2-2s2 .9 2 2v2z"/>
+                      </svg>
+                      Confirm Password
+                    </label>
+                    <div className="password-input-wrapper">
+                      <input
+                        id="confirmPassword"
+                        type={showConfirmPassword ? "text" : "password"}
+                        value={confirmPassword}
+                        onChange={(event) => {
+                          setConfirmPassword(event.target.value);
+                          clearFieldError("confirmPassword");
+                        }}
+                        placeholder="Re-enter your password"
+                        required
+                        className={fieldErrors.confirmPassword ? "error" : ""}
+                      />
+                      <button
+                        type="button"
+                        className="password-toggle-btn"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                      >
+                        {showConfirmPassword ? (
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                            <line x1="1" y1="1" x2="23" y2="23"/>
+                          </svg>
+                        ) : (
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                            <circle cx="12" cy="12" r="3"/>
+                          </svg>
+                        )}
+                      </button>
+                    </div>
+                    {fieldErrors.confirmPassword && (
+                      <p className="field-error">
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
+                          <path d="M7 0C3.13 0 0 3.13 0 7s3.13 7 7 7 7-3.13 7-7-3.13-7-7-7zm1 10H6V6h2v4zm0-5H6V3h2v2z"/>
+                        </svg>
+                        {fieldErrors.confirmPassword}
+                      </p>
+                    )}
+                  </div>
 
                   <label className="terms-check">
                     <input
@@ -523,31 +796,60 @@ export default function Navbar({ userName = "Alex Silva", role = "USER" }) {
                         clearFieldError("agreeTerms");
                       }}
                     />
-                    <span>I agree to the Terms and Privacy Policy</span>
+                    <span>I agree to the <a href="#terms">Terms of Service</a> and <a href="#privacy">Privacy Policy</a></span>
                   </label>
-                  {fieldErrors.agreeTerms && <p className="field-error">{fieldErrors.agreeTerms}</p>}
+                  {fieldErrors.agreeTerms && (
+                    <p className="field-error">
+                      <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
+                        <path d="M7 0C3.13 0 0 3.13 0 7s3.13 7 7 7 7-3.13 7-7-3.13-7-7-7zm1 10H6V6h2v4zm0-5H6V3h2v2z"/>
+                      </svg>
+                      {fieldErrors.agreeTerms}
+                    </p>
+                  )}
                 </>
               )}
 
-              {fieldErrors.password && <p className="field-error">{fieldErrors.password}</p>}
-
-              {successMessage && <p className="login-success">{successMessage}</p>}
-              {errorMessage && <p className="login-error">{errorMessage}</p>}
+              {successMessage && (
+                <div className="alert alert-success">
+                  <svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor">
+                    <path d="M9 0C4.03 0 0 4.03 0 9s4.03 9 9 9 9-4.03 9-9-4.03-9-9-9zm4.3 6.7l-5 5c-.2.2-.5.2-.7 0l-2-2c-.2-.2-.2-.5 0-.7s.5-.2.7 0l1.6 1.6 4.6-4.6c.2-.2.5-.2.7 0s.2.5.1.7z"/>
+                  </svg>
+                  {successMessage}
+                </div>
+              )}
+              {errorMessage && (
+                <div className="alert alert-error">
+                  <svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor">
+                    <path d="M9 0C4.03 0 0 4.03 0 9s4.03 9 9 9 9-4.03 9-9-4.03-9-9-9zm1 13H8V8h2v5zm0-6H8V5h2v2z"/>
+                  </svg>
+                  {errorMessage}
+                </div>
+              )}
 
               <button className="btn btn-primary auth-primary-btn" type="submit" disabled={isSubmitting}>
-                {isSubmitting
-                  ? authMode === "login"
-                    ? "Signing in..."
-                    : "Creating account..."
-                  : authMode === "login"
-                    ? "Sign in"
-                    : "Create account"}
+                {isSubmitting ? (
+                  <>
+                    <svg className="spinner" width="18" height="18" viewBox="0 0 18 18" fill="none">
+                      <circle cx="9" cy="9" r="7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeDasharray="32" strokeDashoffset="32">
+                        <animateTransform attributeName="transform" type="rotate" from="0 9 9" to="360 9 9" dur="1s" repeatCount="indefinite"/>
+                      </circle>
+                    </svg>
+                    {authMode === "login" ? "Signing in..." : "Creating account..."}
+                  </>
+                ) : (
+                  <>
+                    {authMode === "login" ? "Sign in to Account" : "Create Account"}
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                      <path d="M8 0L6.59 1.41 12.17 7H0v2h12.17l-5.58 5.59L8 16l8-8z"/>
+                    </svg>
+                  </>
+                )}
               </button>
 
               {authMode === "login" && (
                 <>
                   <div className="oauth-divider" aria-hidden="true">
-                    <span>or</span>
+                    <span>or continue with</span>
                   </div>
                   <button className="btn btn-google auth-google-btn" type="button" onClick={handleGoogleLogin}>
                     <span className="google-mark" aria-hidden="true">
@@ -570,22 +872,40 @@ export default function Navbar({ userName = "Alex Silva", role = "USER" }) {
                         />
                       </svg>
                     </span>
-                    <span>Continue with Google</span>
+                    <span>Google</span>
                   </button>
                 </>
               )}
 
-              <button
-                className="btn btn-ghost auth-switch-btn"
-                type="button"
-                onClick={() => openAuthModal(authMode === "login" ? "register" : "login")}
-              >
-                {authMode === "login" ? "Need an account? Register" : "Already have an account? Login"}
-              </button>
+              <div className="auth-footer">
+                {authMode === "login" ? (
+                  <p>
+                    Don't have an account?{" "}
+                    <button
+                      type="button"
+                      className="link-button"
+                      onClick={() => openAuthModal("register")}
+                    >
+                      Sign up for free
+                    </button>
+                  </p>
+                ) : (
+                  <p>
+                    Already have an account?{" "}
+                    <button
+                      type="button"
+                      className="link-button"
+                      onClick={() => openAuthModal("login")}
+                    >
+                      Sign in
+                    </button>
+                  </p>
+                )}
+              </div>
             </form>
           </div>
         </div>
       )}
-    </header>
+    </>
   );
 }

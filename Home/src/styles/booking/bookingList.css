@@ -1,0 +1,79 @@
+/* Member 2 – Booking List styles */
+.booking-list {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.booking-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 1.1rem 1.3rem;
+  box-shadow: 0 2px 8px rgba(15,23,42,.05);
+}
+
+.booking-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: .5rem;
+}
+
+.booking-card__id { font-weight: 700; color: #64748b; font-size: .85rem; }
+
+.booking-card__status {
+  font-size: .78rem;
+  font-weight: 700;
+  padding: .2rem .6rem;
+  border-radius: 20px;
+  text-transform: uppercase;
+}
+
+.status--pending  { background: #fef9c3; color: #854d0e; }
+.status--approved { background: #dcfce7; color: #166534; }
+.status--rejected { background: #fee2e2; color: #991b1b; }
+.status--cancelled{ background: #f1f5f9; color: #475569; }
+
+.booking-card__facility { font-weight: 600; color: #0f172a; margin: .2rem 0; }
+.booking-card__time { font-size: .85rem; color: #475569; margin: .2rem 0; }
+.booking-card__purpose { font-size: .9rem; color: #374151; margin: .3rem 0; }
+.booking-card__attendees { font-size: .82rem; color: #64748b; }
+.booking-card__reason { font-size: .82rem; color: #dc2626; margin-top: .4rem; }
+
+.booking-card__cancel {
+  margin-top: .8rem;
+  padding: .4rem .9rem;
+  background: #ef4444;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: .85rem;
+  cursor: pointer;
+  transition: background .2s;
+}
+.booking-card__cancel:hover:not(:disabled) { background: #dc2626; }
+.booking-card__cancel:disabled { opacity: .6; cursor: not-allowed; }
+
+.booking-list__empty { color: #64748b; text-align: center; padding: 2rem 0; }
+.booking-list__error { color: #dc2626; text-align: center; padding: 1rem 0; }
+
+.booking-card__actions {
+  display: flex;
+  gap: .5rem;
+  margin-top: .8rem;
+  flex-wrap: wrap;
+}
+
+.booking-card__qr {
+  padding: .4rem .9rem;
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: .85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .2s;
+}
+.booking-card__qr:hover { background: #1d4ed8; }

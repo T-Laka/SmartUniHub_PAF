@@ -4,6 +4,14 @@ import "../../styles/tickets.css";
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8081";
 const MAX_ATTACHMENT_FILES = 5;
 const MAX_ATTACHMENT_BYTES = 5 * 1024 * 1024;
+const ALLOWED_IMAGE_MIME_TYPES = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/gif",
+  "image/webp",
+  "image/bmp",
+]);
+const ALLOWED_IMAGE_FILE_PATTERN = /\.(jpe?g|png|gif|webp|bmp)$/i;
 
 function toLabel(value) {
   return String(value || "")
@@ -41,6 +49,15 @@ function formatBytes(bytes) {
   }
 
   return `${value.toFixed(unitIndex === 0 ? 0 : 1)} ${units[unitIndex]}`;
+}
+
+function isAllowedImageFile(file) {
+  if (!file) {
+    return false;
+  }
+
+  const normalizedType = String(file.type || "").toLowerCase();
+  return ALLOWED_IMAGE_MIME_TYPES.has(normalizedType) || ALLOWED_IMAGE_FILE_PATTERN.test(file.name || "");
 }
 
 function buildAttachmentDataUrl(attachment) {
@@ -303,6 +320,13 @@ export default function AdminTickets() {
       return;
     }
 
+    const invalidImageFile = files.find((file) => !isAllowedImageFile(file));
+    if (invalidImageFile) {
+      resetAttachmentInput();
+      setErrorMessage(`Only image files are allowed. Invalid file: ${invalidImageFile.name}`);
+      return;
+    }
+
     setSelectedFiles(files);
   }
 
@@ -533,9 +557,10 @@ export default function AdminTickets() {
                   type="file"
                   multiple
                   onChange={handleAttachmentsChange}
+                  accept=".jpg,.jpeg,.png,.gif,.webp,.bmp,image/jpeg,image/png,image/gif,image/webp,image/bmp"
                   disabled={showHistory || isSubmitting || selectedTicket.status !== "IN_PROGRESS"}
                 />
-                <p className="ticket-helper-text">Up to 5 files, each max 5 MB.</p>
+                <p className="ticket-helper-text">Up to 5 image files, each max 5 MB.</p>
                 {selectedFiles.length > 0 && (
                   <div className="ticket-selected-files">
                     {selectedFiles.map((file) => (

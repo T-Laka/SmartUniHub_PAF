@@ -1,9 +1,0 @@
-C:\Users\MSI\Desktop\PAF\it3030-paf-2026-smart-campus-group-03.02\smarthub\Backend\src\main\java\com\paf\backend\BackendApplication.java
-C:\Users\MSI\Desktop\PAF\it3030-paf-2026-smart-campus-group-03.02\smarthub\Backend\src\main\java\com\paf\backend\config\CorsConfig.java
-C:\Users\MSI\Desktop\PAF\it3030-paf-2026-smart-campus-group-03.02\smarthub\Backend\src\main\java\com\paf\backend\controller\HealthController.java
-C:\Users\MSI\Desktop\PAF\it3030-paf-2026-smart-campus-group-03.02\smarthub\Backend\src\main\java\com\paf\backend\controller\HomeController.java
-C:\Users\MSI\Desktop\PAF\it3030-paf-2026-smart-campus-group-03.02\smarthub\Backend\src\main\java\com\paf\backend\controller\TicketController.java
-C:\Users\MSI\Desktop\PAF\it3030-paf-2026-smart-campus-group-03.02\smarthub\Backend\src\main\java\com\paf\backend\dto\TicketDTO.java
-C:\Users\MSI\Desktop\PAF\it3030-paf-2026-smart-campus-group-03.02\smarthub\Backend\src\main\java\com\paf\backend\entity\Ticket.java
-C:\Users\MSI\Desktop\PAF\it3030-paf-2026-smart-campus-group-03.02\smarthub\Backend\src\main\java\com\paf\backend\repository\TicketRepository.java
-C:\Users\MSI\Desktop\PAF\it3030-paf-2026-smart-campus-group-03.02\smarthub\Backend\src\main\java\com\paf\backend\service\TicketService.java

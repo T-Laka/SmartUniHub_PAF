@@ -348,3 +348,211 @@
     align-items: start;
   }
 }
+
+
+/* User Management Section */
+.admin-users-section {
+  margin-bottom: 2rem;
+}
+
+.users-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+  gap: 1rem;
+}
+
+.users-section-header h3 {
+  margin: 0 0 0.25rem;
+  font-size: 1.25rem;
+  color: #1e293b;
+}
+
+.users-section-header p {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+.btn-manage-users {
+  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.625rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.3);
+  white-space: nowrap;
+}
+
+.btn-manage-users:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
+}
+
+.users-quick-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.user-stat-card {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  padding: 1rem;
+  background: #f8fafc;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+}
+
+.user-stat-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.user-stat-card p {
+  margin: 0 0 0.125rem;
+  font-size: 0.8125rem;
+  color: #64748b;
+}
+
+.user-stat-card strong {
+  font-size: 1.5rem;
+  color: #1e293b;
+}
+
+.recent-users-table {
+  margin-top: 1.5rem;
+}
+
+.recent-users-table h4 {
+  margin: 0 0 1rem;
+  font-size: 1rem;
+  color: #1e293b;
+}
+
+.recent-users-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.recent-users-table thead {
+  background: #f8fafc;
+}
+
+.recent-users-table th {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.recent-users-table td {
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 0.875rem;
+  color: #334155;
+}
+
+.recent-users-table tbody tr {
+  transition: background 0.2s ease;
+}
+
+.recent-users-table tbody tr:hover {
+  background: #f8fafc;
+}
+
+.user-cell-compact {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.user-avatar-small {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.75rem;
+  flex-shrink: 0;
+}
+
+.role-badge-small,
+.status-badge-small {
+  padding: 0.1875rem 0.625rem;
+  border-radius: 5px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  display: inline-block;
+}
+
+.role-badge-small.role-admin {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.role-badge-small.role-staff {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.role-badge-small.role-user {
+  background: #e0e7ff;
+  color: #4338ca;
+}
+
+.status-badge-small.status-active {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.status-badge-small.status-suspended {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+@media (max-width: 768px) {
+  .users-section-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .btn-manage-users {
+    width: 100%;
+  }
+
+  .users-quick-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .recent-users-table {
+    overflow-x: auto;
+  }
+
+  .recent-users-table table {
+    min-width: 600px;
+  }
+}

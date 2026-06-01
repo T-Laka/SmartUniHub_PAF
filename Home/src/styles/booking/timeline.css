@@ -1,0 +1,151 @@
+/* Member 2 – Timeline Visualizer styles */
+.tl-wrap {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1.2rem 1.4rem 1.4rem;
+  margin-top: 1.2rem;
+  box-shadow: 0 2px 10px rgba(15,23,42,.05);
+}
+
+.tl-header {
+  display: flex;
+  align-items: center;
+  gap: .8rem;
+  flex-wrap: wrap;
+  margin-bottom: .7rem;
+}
+
+.tl-title {
+  font-weight: 700;
+  font-size: .95rem;
+  color: #0f172a;
+}
+
+.tl-loading { font-size: .82rem; color: #64748b; }
+.tl-error   { font-size: .82rem; color: #dc2626; }
+.tl-count   { font-size: .82rem; color: #16a34a; margin-left: auto; }
+
+/* Legend */
+.tl-legend {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: .9rem;
+}
+
+.tl-legend-item {
+  display: flex;
+  align-items: center;
+  gap: .35rem;
+  font-size: .8rem;
+  color: #374151;
+}
+
+.tl-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.tl-dot--free {
+  background: #e0f2fe;
+  border: 1px solid #bae6fd;
+}
+
+/* Track */
+.tl-track {
+  position: relative;
+  height: 52px;
+  border-radius: 8px;
+  overflow: visible;
+  margin-top: 1.6rem; /* room for tick labels above */
+}
+
+.tl-free-bar {
+  position: absolute;
+  inset: 0;
+  background: #e0f2fe;
+  border-radius: 8px;
+  border: 1px solid #bae6fd;
+}
+
+/* Hour ticks */
+.tl-tick {
+  position: absolute;
+  top: -1.5rem;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+}
+
+.tl-tick::after {
+  content: "";
+  display: block;
+  width: 1px;
+  height: 52px;
+  margin-top: .15rem;
+  background: rgba(148,163,184,.35);
+  position: absolute;
+  top: 1.2rem;
+}
+
+.tl-tick-label {
+  font-size: .68rem;
+  color: #94a3b8;
+  white-space: nowrap;
+}
+
+/* Booked slots */
+.tl-slot {
+  position: absolute;
+  top: 4px;
+  height: calc(100% - 8px);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  cursor: default;
+  transition: filter .15s;
+  min-width: 4px;
+}
+
+.tl-slot--booked:hover { filter: brightness(1.12); }
+
+.tl-slot-label {
+  font-size: .68rem;
+  font-weight: 700;
+  color: #fff;
+  white-space: nowrap;
+  padding: 0 4px;
+  text-shadow: 0 1px 2px rgba(0,0,0,.3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* User selection overlay */
+.tl-slot--selection {
+  top: 0;
+  height: 100%;
+  border: 2px dashed;
+  border-radius: 8px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Conflict warning */
+.tl-conflict-msg {
+  margin-top: .8rem;
+  padding: .55rem .9rem;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  color: #dc2626;
+  font-size: .88rem;
+  font-weight: 600;
+}
