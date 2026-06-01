@@ -1,1 +1,2 @@
-# it3030-paf-2026-smart-campus-group-03.02
+# SmartUniHub_PAF
+
